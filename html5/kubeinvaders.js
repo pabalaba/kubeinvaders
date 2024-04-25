@@ -1,14 +1,38 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  Key Mappings
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+// Button key
+const MOVE_RIGHT_KEY = ["D", "d", "Right", "ArrowRight"]
+const MOVE_LEFT_KEY = ["A", "a", , "Left", "ArrowLeft"]
+const MOVE_UP_KEY = ["W", "w", , "Up", "ArrowUp"]
+const MOVE_DOWN_KEY = ["S", "s", "Down", "ArrowDown"]
+
+// Shoot Key
+const SHOOT_KEY = [" ", "Space"]
+
+// Option keys
+const SHUFFLE_KEY = ["J", "j"]
+const HELP_KEY = ["H", "h"]
+const CHAOS_NODE_KEY = ["K", "k"]
+const CHAOS_POD_KEY = ["L", "l"]
+const NAMESPACE_KEY = ["N", "n"]
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  Others
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 var ballRadius = 7;
-var x = canvas.width/2;
-var y = canvas.height-30;
+var x = canvas.width / 2;
+var y = canvas.height - 30;
 var dx = 2;
 var dy = -2;
 var spaceshipHeight = 60;
 var spaceshipWidth = 60;
-var spaceshipX = (canvas.width-spaceshipWidth)/2;
-var spaceshipY = (canvas.height-spaceshipHeight)/2;
+var spaceshipX = (canvas.width - spaceshipWidth) / 2;
+var spaceshipY = (canvas.height - spaceshipHeight) / 2;
 var clu_endpoint = "endpoint_placeholder";
 var clu_insicure = "insecure_endpoint_placeholder";
 var demo_mode = "platform_engineering_demo_mode_placeholder"
@@ -38,7 +62,7 @@ var randomFactor = 10;
 // pods list from kubernetes
 var pods = [];
 var game_mode_switch = false;
-var programming_mode_switch = false; 
+var programming_mode_switch = false;
 var now = "";
 var game_buttons = document.getElementById("game-buttons");
 var game_screen = document.getElementById("game-screen");
@@ -163,7 +187,7 @@ function getMetrics() {
     var oReq = new XMLHttpRequest();
     oReq.onload = function () {
         var lines = this.responseText.split('\n');
-        for (var i = 0;i < lines.length;i++){
+        for (var i = 0; i < lines.length; i++) {
             metric = lines[i].split(' ');
 
             if (metric[0] == "chaos_node_jobs_total") {
@@ -172,26 +196,26 @@ function getMetrics() {
             }
             else if (metric[0] == "deleted_pods_total") {
                 chart_deleted_pods_total = Number(metric[1]);
-                $('#deleted_pods_total').text(metric[1]);            
+                $('#deleted_pods_total').text(metric[1]);
             }
             else if (metric[0] == "fewer_replicas_seconds") {
                 chart_fewer_replicas_seconds = Number(metric[1]);
-                $('#fewer_replicas_seconds').text(metric[1]);            
+                $('#fewer_replicas_seconds').text(metric[1]);
             }
             else if (metric[0] == "latest_fewer_replicas_seconds") {
                 chart_latest_fewer_replicas_seconds = Number(metric[1]);
-                $('#latest_fewer_replicas_seconds').text(metric[1]);            
+                $('#latest_fewer_replicas_seconds').text(metric[1]);
             }
             else if (metric[0] == "pods_not_running_on_selected_ns") {
                 chart_pods_not_running_on = Number(metric[1]);
-                $('#pods_not_running_on').text(metric[1]);            
+                $('#pods_not_running_on').text(metric[1]);
             }
             else if (metric[0] == "pods_match_regex:" + random_code) {
-                $('#pods_match_regex').text(metric[1]);            
+                $('#pods_match_regex').text(metric[1]);
             }
             else if (metric[0].match(chaos_job_regex)) {
                 metrics_split = metric[0].split(":");
-                chaos_jobs_status.set(metrics_split[1] + ":" + metrics_split[2] + ":" +  metrics_split[3], metric[1]);
+                chaos_jobs_status.set(metrics_split[1] + ":" + metrics_split[2] + ":" + metrics_split[3], metric[1]);
             }
             else if (metric[0] == "current_chaos_job_pod") {
                 chart_current_chaos_job_pod = Number(metric[1]);
@@ -204,11 +228,11 @@ function getMetrics() {
 }
 
 function scroll_backwards() {
-    if (chaos_logs_pos > 0){
-        chaos_logs_pos = chaos_logs_pos -1;
+    if (chaos_logs_pos > 0) {
+        chaos_logs_pos = chaos_logs_pos - 1;
         $('#current_log_pos').text(chaos_logs_pos);
         getChaosJobsLogs();
-    } 
+    }
 }
 
 function getTotalLogsPos() {
@@ -270,20 +294,20 @@ function runKubeLinter() {
     var oReq = new XMLHttpRequest();
     oReq.onload = function () {
         kubelinter = this.responseText;
-        $('#alert_placeholder').replaceWith(alert_div + "KubeLinter executed correctly on namespace " + namespace +  ". Changing Regex and activating logs tail.</div>");
+        $('#alert_placeholder').replaceWith(alert_div + "KubeLinter executed correctly on namespace " + namespace + ". Changing Regex and activating logs tail.</div>");
         enableLogTail();
         setLogRegex();
 
         $('#logTailRegex').val('{"since": "60", "pod":".*", "namespace":"' + namespace + '", "labels":".*", "annotations":".*", "containers":".*"}');
-        
+
         if (!log_tail_switch) {
-            setLogConsole(); 
+            setLogConsole();
         }
     };;
 
     $('#currentKubeLinterResult').text('KubeLinter launched. Set this regex and start log tail: {"since": "60", "pod":".*", "namespace":"' + namespace + '", "labels":".*", "annotations":".*", "containers":".*"}');
 
-    oReq.open("GET", k8s_url + "/kube/kube-linter?logid=" + random_code +"&namespace=" + namespace);
+    oReq.open("GET", k8s_url + "/kube/kube-linter?logid=" + random_code + "&namespace=" + namespace);
     oReq.send();
 }
 
@@ -404,7 +428,7 @@ function getPods() {
             new_pods = JSON.parse(this.responseText)["items"];
 
             // Pod might just be killed in game, but not terminated in k8s yet.
-            for (i=0; i<new_pods.length; i++) {
+            for (i = 0; i < new_pods.length; i++) {
                 if (aliens.some((alien) => alien.name == new_pods[i].name && alien.status == "killed")) {
                     new_pods[i].status = "killed";
                 }
@@ -424,7 +448,7 @@ function getPods() {
             pods = nodes;
         } else {
             pods = [];
-        }    
+        }
     }
 }
 
@@ -450,86 +474,141 @@ window.setInterval(function getKubeItems() {
     }
 }, 500)
 
+function isRightKeyPressed(eventKey) {
+    return MOVE_RIGHT_KEY.includes(eventKey);
+}
+
+function isLeftKeyPressed(eventKey) {
+    return MOVE_LEFT_KEY.includes(eventKey);
+}
+
+function isUpKeyPressed(eventKey) {
+    return MOVE_UP_KEY.includes(eventKey);
+}
+
+function isDownKeyPressed(eventKey) {
+    return MOVE_DOWN_KEY.includes(eventKey);
+}
+
+function isShootKeyPressed(eventKey) {
+    return SHOOT_KEY.includes(eventKey);
+}
+
+function isShuffleKeyPressed(eventKey) {
+    return SHUFFLE_KEY.includes(eventKey);
+}
+
+function isHelpKeyPressed(eventKey) {
+    return HELP_KEY.includes(eventKey);
+}
+
+function isChaosNodeKeyPressed(eventKey) {
+    return CHAOS_NODE_KEY.includes(eventKey);
+}
+
+function isChaosPodKeyPressed(eventKey) {
+    return CHAOS_POD_KEY.includes(eventKey);
+}
+
+function isNamespacesKeyPressed(eventKey) {
+    return NAMESPACE_KEY.includes(eventKey);
+}
+
 function keyDownHandler(e) {
     if (!modal_opened && game_mode_switch) {
         e.preventDefault();
-        if (e.key == "Right" || e.key == "ArrowRight") {
-            rightPressed = true;
-        }
-        else if (e.key == "Left" || e.key == "ArrowLeft") {
-            leftPressed = true;
-        }
-        if (e.key == "Up" || e.key == "ArrowUp") {
-            upPressed = true;
-        }
-        else if (e.key == "Down" || e.key == "ArrowDown") {
-            downPressed = true;
-        }
-        else if (e.keyCode == 83) {
-            if (shuffle) {
-                shuffle = false;
-                $('#alert_placeholder').replaceWith(alert_div + 'Latest action: Disable shuffle</div>');
-            }
-            else {
-                shuffle = true
-                $('#alert_placeholder').replaceWith(alert_div + 'Latest action: Enable shuffle</div>');
-            }
-        }
-        else if (e.keyCode == 32) {
-            shot = true
-        }
-        else if (e.keyCode == 78) {
-            switchNamespace();
-        }
-        else if (e.keyCode == 72) {
-            if (help) {
-                help = false;
-            }
-            else {
-                help = true
-            }
-        }
-        else if (e.keyCode == 67) {
 
-            if (is_demo_mode()) {
-                demo_mode_alert();
-                return;
-            }
+        rightPressed = isRightKeyPressed(e.key);
+        leftPressed = isLeftKeyPressed(e.key);
+        upPressed = isUpKeyPressed(e.key);
+        downPressed = isDownKeyPressed(e.key);
+        shot = isShootKeyPressed(e.key);
 
-            if (chaos_nodes) {
-                chaos_nodes = false;
-                $('#alert_placeholder').replaceWith(alert_div + 'Latest action: Hide nodes</div>');
-
-            }
-            else {
-                chaos_nodes = true
-                $('#alert_placeholder').replaceWith(alert_div + 'Latest action: Show nodes</div>');
-            }
-        }
-        else if (e.keyCode == 80) {
-            if (chaos_pods) {
-                chaos_pods = false;
-                $('#alert_placeholder').replaceWith(alert_div + 'Latest action: Hide pods</div>');
-            }
-            else {
-                chaos_pods = true
-                $('#alert_placeholder').replaceWith(alert_div + 'Latest action: Show pods</div>');
-            }
-        }
+        handleToggleableActions(e)
     }
 }
 
 function keyUpHandler(e) {
-    if (e.key == "Right" || e.key == "ArrowRight") {
+
+    if (isRightKeyPressed(e.key)) {
         rightPressed = false;
     }
-    else if (e.key == "Left" || e.key == "ArrowLeft") {
+    if (isLeftKeyPressed(e.key)) {
         leftPressed = false;
     }
-    else if (e.key == "Up" || e.key == "ArrowUp") {
+    if (isUpKeyPressed(e.key)) {
         upPressed = false;
     }
-    else if (e.key == "Down" || e.key == "ArrowDown") {
+    if (isDownKeyPressed(e.key)) {
+        downPressed = false;
+    }
+}
+
+function handleToggleableActions(e) {
+    if (isShuffleKeyPressed(e.key)) {
+        toggleAction(toggleShuffle, 'Shuffle');
+    }
+    else if (isNamespacesKeyPressed(e.key)) {
+        switchNamespace();
+    }
+    else if (isHelpKeyPressed(e.key)) {
+        toggleAction(toggleHelp, 'Help');
+    }
+    else if (isChaosNodeKeyPressed(e.key)) {
+        toggleAction(toggleChaosNodes, 'Hide nodes', 'Show nodes');
+    }
+    else if (isChaosPodKeyPressed(e.key)) {
+        toggleAction(toggleChaosPods, 'Hide pods', 'Show pods');
+    }
+}
+
+function toggleAction(toggleFunction, actionName, alternativeActionName = null) {
+    const currentState = toggleFunction();
+
+    if (currentState) {
+        const enabledAction = alternativeActionName || `Enable ${actionName}`;
+        updateUI(enabledAction);
+    } else {
+        updateUI(`Disable ${actionName}`);
+    }
+}
+
+function updateUI(message) {
+    $('#alert_placeholder').replaceWith(alert_div + 'Latest action: ' + message + '</div>');
+}
+
+function toggleShuffle() {
+    shuffle = !shuffle;
+    return shuffle;
+}
+
+function toggleHelp() {
+    help = !help;
+    return help;
+}
+
+function toggleChaosNodes() {
+    chaos_nodes = !chaos_nodes;
+    return chaos_nodes;
+}
+
+function toggleChaosPods() {
+    chaos_pods = !chaos_pods;
+    return chaos_pods;
+}
+
+function keyUpHandler(e) {
+
+    if (isRightKeyPressed(e.key)) {
+        rightPressed = false;
+    }
+    if (isLeftKeyPressed(e.key)) {
+        leftPressed = false;
+    }
+    if (isUpKeyPressed(e.key)) {
+        upPressed = false;
+    }
+    if (isDownKeyPressed(e.key)) {
         downPressed = false;
     }
 }
@@ -554,20 +633,20 @@ function drawAlien(alienX, alienY, name, status) {
 function checkRocketAlienCollision() {
     if (contains(aliensY, rocketY)) {
         var i;
-        for (i=aliens.length - 1; i >= 0; i--) {
+        for (i = aliens.length - 1; i >= 0; i--) {
             if (aliens[i]["active"] && (rocketY - aliens[i]["y"] < 5)) {
                 var rangeX = []
                 rangeX.push(aliens[i]["x"]);
 
-                for (k=aliens[i]["x"]; k<aliens[i]["x"]+aliensWidth; k++) {
+                for (k = aliens[i]["x"]; k < aliens[i]["x"] + aliensWidth; k++) {
                     rangeX.push(k);
                 }
-                
+
                 if (contains(rangeX, rocketX)) {
                     collisionDetected = true;
                     aliens[i]["status"] = "killed";
                     // Aliens might be updated before new pods are fetched
-                    for (j=0; j<pods.length; j++) {
+                    for (j = 0; j < pods.length; j++) {
                         if (pods[j].name == aliens[i].name) {
                             pods[j].status = "killed";
                         }
@@ -582,7 +661,7 @@ function checkRocketAlienCollision() {
                     return true;
                 }
             }
-        } 
+        }
     }
     return false;
 }
@@ -628,7 +707,7 @@ function drawSpaceship() {
 }
 
 window.setInterval(function draw() {
-    if (namespacesJumpFlag){
+    if (namespacesJumpFlag) {
         randNamespaceJump(1, 10, 8);
     }
 }, 1000)
@@ -636,45 +715,45 @@ window.setInterval(function draw() {
 window.setInterval(function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (i=0; i<aliens.length; i++) {
+    for (i = 0; i < aliens.length; i++) {
         if (aliens[i]["active"]) {
             drawAlien(aliens[i]["x"], aliens[i]["y"], aliens[i]["name"], aliens[i]["status"]);
         }
     }
     drawSpaceship();
-    
+
     if (shot && !collisionDetected) {
         drawRocket();
     }
 
-    if (x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+    if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
         dx = -dx;
     }
-    if (y + dy > canvas.height-ballRadius || y + dy < ballRadius) {
+    if (y + dy > canvas.height - ballRadius || y + dy < ballRadius) {
         dy = -dy;
     }
-    
-    if (autoPilot){
+
+    if (autoPilot) {
         spaceshipY = 340;
-        
+
         if (getRandomInt(100) < randomFactor) {
             shot = true;
         }
-        
+
         if (autoPilotDirection == 0) {
-            autoPilotDirection = getRandomInt(canvas.width-spaceshipWidth);
+            autoPilotDirection = getRandomInt(canvas.width - spaceshipWidth);
             spaceshipxOld = spaceshipX;
-        } 
+        }
         else if ((spaceshipX == autoPilotDirection)) {
-            autoPilotDirection = getRandomInt(canvas.width-spaceshipWidth);
+            autoPilotDirection = getRandomInt(canvas.width - spaceshipWidth);
             spaceshipxOld = spaceshipX;
         }
         else if ((autoPilotDirection < spaceshipxOld) && (spaceshipX < autoPilotDirection)) {
-            autoPilotDirection = getRandomInt(canvas.width-spaceshipWidth);
+            autoPilotDirection = getRandomInt(canvas.width - spaceshipWidth);
             spaceshipxOld = spaceshipX;
         }
         else if ((autoPilotDirection > spaceshipxOld) && (spaceshipX > autoPilotDirection)) {
-            autoPilotDirection = getRandomInt(canvas.width-spaceshipWidth);
+            autoPilotDirection = getRandomInt(canvas.width - spaceshipWidth);
             spaceshipxOld = spaceshipX;
         }
         else {
@@ -713,7 +792,7 @@ window.setInterval(function draw() {
             spaceshipY = canvas.height - spaceshipHeight;
         }
     }
-    
+
     // if (aliens_temp != aliens) {
     //     for (i=0; i<aliens.length; i++) {
     //         if (aliens[i]["active"]) {
@@ -722,7 +801,7 @@ window.setInterval(function draw() {
     //     }
     //     aliens_temp = aliens;
     // }
-    
+
     ctx.fillStyle = 'white';
     ctx.font = '16px pixel';
 
@@ -731,14 +810,14 @@ window.setInterval(function draw() {
     ctx.fillText('Alien Shuffle: ' + shuffle, 10, startYforHelp + 40);
     ctx.fillText('Auto Namespaces Switch: ' + namespacesJumpStatus, 10, startYforHelp + 60);
 
-    ctx.fillText('press \'h\' for help!', 10, startYforHelp + 80);
+    ctx.fillText(`press '${HELP_KEY[0]}' for help!`, 10, startYforHelp + 80);
 
     if (help) {
-        ctx.fillText('h => Activate or deactivate help', 10, 280);
-        ctx.fillText('s => Activate or deactivate shuffle for aliens', 10, 300);
-        ctx.fillText('n => Change namespace', 10, 320);
-        ctx.fillText('p => Activate or deactivate chaos engineering against pods', 10, 340);
-        ctx.fillText('c => Activate or deactivate chaos engineering against nodes', 10, 360);
+        ctx.fillText(`${HELP_KEY[0]} => Activate or deactivate help`, 10, 280);
+        ctx.fillText(`${SHUFFLE_KEY[0]} => Activate or deactivate shuffle for aliens`, 10, 300);
+        ctx.fillText(`${NAMESPACE_KEY[0]} => Change namespace`, 10, 320);
+        ctx.fillText(`${CHAOS_POD_KEY[0]} => Activate or deactivate chaos engineering against pods`, 10, 340);
+        ctx.fillText(`${CHAOS_NODE_KEY[0]} => Activate or deactivate chaos engineering against nodes`, 10, 360);
     }
 }, 10)
 
@@ -781,7 +860,7 @@ function showPodNameControl() {
 }
 
 function podExists(podName) {
-    for (i=0; i<aliens.length; i++) {
+    for (i = 0; i < aliens.length; i++) {
         if (aliens[i]["name"] == podName) {
             return true;
         }
@@ -790,7 +869,7 @@ function podExists(podName) {
 }
 
 function findReplace() {
-    for (i=0; i<aliens.length; i++) {
+    for (i = 0; i < aliens.length; i++) {
         if (!aliens[i]["active"]) {
             return i;
         }
@@ -812,7 +891,7 @@ window.setInterval(function setAliens() {
 
     aliens = [];
     if (pods.length > 0) {
-        for (k=10; k>0; k--) {
+        for (k = 10; k > 0; k--) {
             if (!contains(aliensY, k)) {
                 aliensY.push(k);
             }
@@ -821,12 +900,12 @@ window.setInterval(function setAliens() {
         var y = 10;
         var yInc = false;
 
-        for (i=0; i<pods.length; i++) {
+        for (i = 0; i < pods.length; i++) {
             if (!podExists(pods[i].name)) {
                 var replaceWith = findReplace();
                 if (replaceWith != -1) {
-                    aliens[replaceWith] = {"name": pods[i].name, "status": pods[i].status, "x": aliens[replaceWith]["x"], "y": aliens[replaceWith]["y"], "active": true}
-                    cnt =+ 1;
+                    aliens[replaceWith] = { "name": pods[i].name, "status": pods[i].status, "x": aliens[replaceWith]["x"], "y": aliens[replaceWith]["y"], "active": true }
+                    cnt = + 1;
                 }
                 else {
                     if (!yInc) {
@@ -837,13 +916,13 @@ window.setInterval(function setAliens() {
                         y -= 20;
                         yInc = false;
                     }
-                    aliens.push({"name": pods[i].name, "status": pods[i].status, "x": x, "y": y, "active": true});
-                    cnt =+ 1;
+                    aliens.push({ "name": pods[i].name, "status": pods[i].status, "x": x, "y": y, "active": true });
+                    cnt = + 1;
                 }
                 if (aliens.length % maxAliensPerRow == 0) {
                     x = 10;
                     y += aliensIncrementY;
-                    for (k=y+10; k>=y; k--) {
+                    for (k = y + 10; k >= y; k--) {
                         if (!contains(aliensY, k)) {
                             aliensY.push(k);
                         }
@@ -872,14 +951,14 @@ window.setInterval(function backgroundTasks() {
     }
 
     if (log_tail_switch) {
-	    getChaosJobsLogs();
+        getChaosJobsLogs();
         getTotalLogsPos();
     }
-    
+
     if (programming_mode_switch) {
         drawChaosProgramFlow();
     }
-    
+
     if (chaos_report_switch) {
         updateElapsedTimeArray(chaosReportprojectName);
         updateChaosReportStartTime(chaosReportprojectName);
@@ -904,3 +983,10 @@ document.getElementById("gameContainer").style.visibility = "visible";
 document.getElementById("metricsPresetsRow").style.visibility = "visible";
 document.getElementById("gameContainer").style.opacity = 1;
 document.getElementById("metricsPresetsRow").style.opacity = 1;
+var helpMenuBody = document.getElementById('help-menu-body');
+    helpMenuBody.innerHTML = `
+        ${HELP_KEY[0]} => Activate or deactivate help<br>
+        ${SHUFFLE_KEY[0]} => Activate or deactivate shuffle for aliens<br>
+        ${NAMESPACE_KEY[0]} => Change namespace<br>
+        ${CHAOS_POD_KEY[0]} => Activate or deactivate chaos engineering against pods<br>
+        ${CHAOS_NODE_KEY[0]} => Activate or deactivate chaos engineering against nodes`;
