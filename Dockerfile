@@ -2,8 +2,11 @@ FROM nginx:stable
 
 # Update repo and install some utilities and prerequisites
 RUN apt-get update -y
-RUN apt-get -y install procps git vim wget gnupg ca-certificates jq openssl task-spooler at curl apt-transport-https python3 python3-pip redis libssl-dev
-RUN pip3 install pyyaml
+RUN apt-get -y install procps git vim wget gnupg ca-certificates jq openssl task-spooler at curl apt-transport-https python3-full redis libssl-dev python3-yaml
+
+# Create and activate a virtual environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Install kubectl
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -12,7 +15,7 @@ RUN mv ./kubectl /usr/local/bin/kubectl
 
 # Install Openresty
 RUN wget -O - https://openresty.org/package/pubkey.gpg | apt-key add -
-RUN codename=`grep -Po 'VERSION="[0-9]+ \(\K[^)]+' /etc/os-release` && echo "deb http://openresty.org/package/debian $codename openresty" | tee /etc/apt/sources.list.d/openresty.list
+RUN codename=$(grep -Po 'VERSION="[0-9]+ \(\K[^)]+' /etc/os-release) && echo "deb http://openresty.org/package/debian $codename openresty" | tee /etc/apt/sources.list.d/openresty.list
 RUN apt-get update -y
 RUN apt-get -y install openresty
 RUN chmod 777 /usr/local/openresty/nginx
@@ -30,7 +33,7 @@ RUN tar -xvf kube-linter-linux.tar.gz && rm -f kube-linter-linux.tar.gz
 RUN cp kube-linter /usr/local/bin/ && chmod 775 /usr/local/bin/kube-linter
 RUN mkdir /tmp/kube-linter-pods && chmod 777 /tmp/kube-linter-pods
 
-# Installl parser script for kubelinter
+# Install parser script for kubelinter
 COPY kube-linter/kube-linter-parser.sh /opt/kube-linter-parser.sh
 RUN chmod +x /opt/kube-linter-parser.sh
 
@@ -60,13 +63,14 @@ COPY scripts/programming_mode.lua /usr/local/openresty/nginx/conf/kubeinvaders/p
 COPY scripts/config_kubeinv.lua /usr/local/openresty/lualib/config_kubeinv.lua
 COPY scripts/data/codenames.txt /usr/local/openresty/nginx/conf/kubeinvaders/data/codenames.txt
 
-# Copy Python helpers
+# Copy Python helpers and install their requirements
 COPY scripts/programming_mode /opt/programming_mode/
 COPY scripts/metrics_loop /opt/metrics_loop/
 COPY scripts/logs_loop /opt/logs_loop/
-RUN pip3 install -r /opt/programming_mode/requirements.txt
+RUN pip install -r /opt/programming_mode/requirements.txt
 
 EXPOSE 8080
+EXPOSE 9090
 
 ENV PATH=/usr/local/openresty/nginx/sbin:$PATH
 

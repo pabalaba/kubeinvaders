@@ -41,7 +41,19 @@ var chaos_report_post_data = "";
 
 // when zoomIn is 12
 var maxAliensPerRow = 20;
-var startYforHelp = 700;
+//var startYforHelp = 700;
+
+const settings = {
+    canvasSizes: {
+        zoomIn: { width: 1200, height: 800, containerWidth: "100%", containerHeight: "100%", buttonWidth: "1200px" },
+        zoomOut: { width: 720, height: 480, containerWidth: "50%", containerHeight: "50%", buttonWidth: "900px" }
+    },
+    textPositions: {
+        startYforHelp: { zoomIn: 600, zoomOut: 280 },
+        increment: 20
+    },
+    maxAliensPerRow: { zoomIn: 20, zoomOut: 12 },
+};
 
 if (clu_insicure == "true") {
     k8s_url = "http://" + clu_endpoint;
@@ -562,14 +574,14 @@ function handleToggleableActions(e) {
     }
 }
 
-function toggleAction(toggleFunction, actionName, alternativeActionName = null) {
+function toggleAction(toggleFunction, actionName, alternativeActionName) {
     const currentState = toggleFunction();
-
-    if (currentState) {
-        const enabledAction = alternativeActionName || `Enable ${actionName}`;
-        updateUI(enabledAction);
+    if(alternativeActionName) { 
+        const displayAction = currentState ? actionName : alternativeActionName
+        return updateUI(displayAction);
     } else {
-        updateUI(`Disable ${actionName}`);
+        const displayAction = (currentState ? `Enabled` : `Disabled`) + ` ${actionName}`;
+        return updateUI(displayAction);
     }
 }
 
@@ -804,22 +816,36 @@ window.setInterval(function draw() {
 
     ctx.fillStyle = 'white';
     ctx.font = '16px pixel';
+    updateCanvasText(ctx, help);
 
-    ctx.fillText('Cluster: ' + endpoint, 10, startYforHelp);
-    ctx.fillText('Current Namespace: ' + namespace, 10, startYforHelp + 20);
-    ctx.fillText('Alien Shuffle: ' + shuffle, 10, startYforHelp + 40);
-    ctx.fillText('Auto Namespaces Switch: ' + namespacesJumpStatus, 10, startYforHelp + 60);
+}, 10)
 
-    ctx.fillText(`press '${HELP_KEY[0]}' for help!`, 10, startYforHelp + 80);
+function renderText(ctx, texts, startY) {
+    texts.forEach((text, index) => {
+        ctx.fillText(text.content, 10, startY + (index * settings.textPositions.increment));
+    });
+}
+
+function updateCanvasText(ctx, help) {
+    const texts = [
+        { content: 'Cluster: ' + endpoint },
+        { content: 'Current Namespace: ' + namespace },
+        { content: 'Alien Shuffle: ' + shuffle },
+        { content: 'Auto Namespaces Switch: ' + namespacesJumpStatus },
+        { content: `press '${HELP_KEY[0]}' for help!` }
+    ];
 
     if (help) {
-        ctx.fillText(`${HELP_KEY[0]} => Activate or deactivate help`, 10, 280);
-        ctx.fillText(`${SHUFFLE_KEY[0]} => Activate or deactivate shuffle for aliens`, 10, 300);
-        ctx.fillText(`${NAMESPACE_KEY[0]} => Change namespace`, 10, 320);
-        ctx.fillText(`${CHAOS_POD_KEY[0]} => Activate or deactivate chaos engineering against pods`, 10, 340);
-        ctx.fillText(`${CHAOS_NODE_KEY[0]} => Activate or deactivate chaos engineering against nodes`, 10, 360);
+        texts.push(...[
+            { content: `${HELP_KEY[0]} => Activate or deactivate help` },
+            { content: `${SHUFFLE_KEY[0]} => Activate or deactivate shuffle for aliens` },
+            { content: `${NAMESPACE_KEY[0]} => Change namespace` },
+            { content: `${CHAOS_POD_KEY[0]} => Activate or deactivate chaos engineering against pods` },
+            { content: `${CHAOS_NODE_KEY[0]} => Activate or deactivate chaos engineering against nodes` }
+        ]);
     }
-}, 10)
+    renderText(ctx, texts, settings.textPositions.startYforHelp[zoomLevel]);
+}
 
 function buttonShuffleHelper() {
     if (shuffle) {
@@ -984,7 +1010,7 @@ document.getElementById("metricsPresetsRow").style.visibility = "visible";
 document.getElementById("gameContainer").style.opacity = 1;
 document.getElementById("metricsPresetsRow").style.opacity = 1;
 var helpMenuBody = document.getElementById('help-menu-body');
-    helpMenuBody.innerHTML = `
+helpMenuBody.innerHTML = `
         ${HELP_KEY[0]} => Activate or deactivate help<br>
         ${SHUFFLE_KEY[0]} => Activate or deactivate shuffle for aliens<br>
         ${NAMESPACE_KEY[0]} => Change namespace<br>
