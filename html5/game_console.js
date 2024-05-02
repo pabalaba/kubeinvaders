@@ -1,7 +1,9 @@
 /* Function for managing game console */
 var zoomLevel = 'zoomIn'
+var changed = false
 
 function adjustZoom(zoomLvl) {
+  changed = true
   zoomLevel = zoomLvl;
   const zoomConfig = settings.canvasSizes[zoomLevel];
   const canvas = document.getElementById("myCanvas");

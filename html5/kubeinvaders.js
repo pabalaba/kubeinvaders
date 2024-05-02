@@ -576,7 +576,7 @@ function handleToggleableActions(e) {
 
 function toggleAction(toggleFunction, actionName, alternativeActionName) {
     const currentState = toggleFunction();
-    if(alternativeActionName) { 
+    if (alternativeActionName) {
         const displayAction = currentState ? actionName : alternativeActionName
         return updateUI(displayAction);
     } else {
@@ -725,6 +725,10 @@ window.setInterval(function draw() {
 }, 1000)
 
 window.setInterval(function draw() {
+
+    console.log(spaceshipX)
+    console.log(spaceshipY)
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (i = 0; i < aliens.length; i++) {
@@ -732,6 +736,18 @@ window.setInterval(function draw() {
             drawAlien(aliens[i]["x"], aliens[i]["y"], aliens[i]["name"], aliens[i]["status"]);
         }
     }
+    if (changed == true) {
+        if (zoomLevel == "zoomIn") {
+            spaceshipX = spaceshipX * (settings.canvasSizes["zoomIn"].width / settings.canvasSizes["zoomOut"].width)
+            spaceshipY = spaceshipY * (settings.canvasSizes["zoomIn"].height / settings.canvasSizes["zoomOut"].height)
+        } else {
+            spaceshipX = spaceshipX * (settings.canvasSizes["zoomOut"].width / settings.canvasSizes["zoomIn"].width)
+            spaceshipY = spaceshipY * (settings.canvasSizes["zoomOut"].height / settings.canvasSizes["zoomIn"].height)
+        }
+        changed = false;
+    }
+
+
     drawSpaceship();
 
     if (shot && !collisionDetected) {
